@@ -1,0 +1,39 @@
+name: MLOps Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install pandas numpy scikit-learn joblib datasets huggingface_hub
+
+    - name: Run Data Preparation
+      run: python tourism_project/data_ingestion.py
+
+    - name: Run Model Training
+      run: python tourism_project/model_building/train.py
+
+    - name: Evaluate Model
+      run: python tourism_project/model_building/evaluate.py
+
+    - name: Upload Model to Hugging Face
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: python tourism_project/model_building/upload_model.py
