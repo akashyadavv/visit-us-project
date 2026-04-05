@@ -11,50 +11,46 @@ jobs:
 
     steps:
 
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-    - name: Install Dependencies
-      run: |
-        pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
-    # ✅ Verify Data Files
-    - name: Check Data Files
-      run: |
-        echo "Checking dataset files..."
-        ls tourism_project/data
+      - name: Check Data Files
+        run: |
+          echo "Checking dataset files..."
+          ls tourism_project/data
 
-    # ✅ Load Model (sanity check)
-    - name: Verify Model File
-      run: |
-        python -c "
+      - name: Verify Model File
+        run: |
+          python - <<EOF
 import joblib
 model = joblib.load('tourism_project/model_building/best_model.pkl')
-print('Model loaded successfully')
-"
+print("Model loaded successfully")
+EOF
 
-    # ✅ Run Simple Prediction Test
-    - name: Test Prediction
-      run: |
-        python -c "
+      - name: Test Prediction
+        run: |
+          python - <<EOF
 import pandas as pd
 import joblib
 
 model = joblib.load('tourism_project/model_building/best_model.pkl')
 
-# Dummy input (must match training columns count)
-input_data = pd.DataFrame([[0]* (len(model.feature_names_in_))], columns=model.feature_names_in_)
+cols = model.feature_names_in_
+input_data = pd.DataFrame([[0]*len(cols)], columns=cols)
 
 pred = model.predict(input_data)
-print('Prediction test successful:', pred)
-"
+print("Prediction test successful:", pred)
+EOF
 
-    # ✅ Success Message
-    - name: Pipeline Completed
-      run: echo "MLOps pipeline executed successfully!"
+      - name: Pipeline Completed
+        run: echo "MLOps pipeline executed successfully!"
