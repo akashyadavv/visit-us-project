@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v3
 
@@ -20,37 +19,16 @@ jobs:
           python-version: '3.9'
 
       - name: Install Dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Check Data Files
-        run: |
-          echo "Checking dataset files..."
-          ls tourism_project/data
+        run: ls tourism_project/data
 
       - name: Verify Model File
-        run: |
-          python - <<EOF
-import joblib
-model = joblib.load('tourism_project/model_building/best_model.pkl')
-print("Model loaded successfully")
-EOF
+        run: python -c "import joblib; joblib.load('tourism_project/model_building/best_model.pkl'); print('Model loaded successfully')"
 
       - name: Test Prediction
-        run: |
-          python - <<EOF
-import pandas as pd
-import joblib
-
-model = joblib.load('tourism_project/model_building/best_model.pkl')
-
-cols = model.feature_names_in_
-input_data = pd.DataFrame([[0]*len(cols)], columns=cols)
-
-pred = model.predict(input_data)
-print("Prediction test successful:", pred)
-EOF
+        run: python -c "import pandas as pd, joblib; model=joblib.load('tourism_project/model_building/best_model.pkl'); cols=model.feature_names_in_; df=pd.DataFrame([[0]*len(cols)], columns=cols); pred=model.predict(df); print('Prediction:', pred)"
 
       - name: Pipeline Completed
-        run: echo "MLOps pipeline executed successfully!"
+        run: echo "Pipeline executed successfully"
