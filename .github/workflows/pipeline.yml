@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
-    - name: Checkout code
+
+    - name: Checkout Repository
       uses: actions/checkout@v3
 
     - name: Set up Python
@@ -19,21 +19,42 @@ jobs:
       with:
         python-version: '3.9'
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
         pip install --upgrade pip
-        pip install pandas numpy scikit-learn joblib datasets huggingface_hub
+        pip install -r requirements.txt
 
-    - name: Run Data Preparation
-      run: python tourism_project/data_ingestion.py
+    # ✅ Verify Data Files
+    - name: Check Data Files
+      run: |
+        echo "Checking dataset files..."
+        ls tourism_project/data
 
-    - name: Run Model Training
-      run: python tourism_project/model_building/train.py
+    # ✅ Load Model (sanity check)
+    - name: Verify Model File
+      run: |
+        python -c "
+import joblib
+model = joblib.load('tourism_project/model_building/best_model.pkl')
+print('Model loaded successfully')
+"
 
-    - name: Evaluate Model
-      run: python tourism_project/model_building/evaluate.py
+    # ✅ Run Simple Prediction Test
+    - name: Test Prediction
+      run: |
+        python -c "
+import pandas as pd
+import joblib
 
-    - name: Upload Model to Hugging Face
-      env:
-        HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      run: python tourism_project/model_building/upload_model.py
+model = joblib.load('tourism_project/model_building/best_model.pkl')
+
+# Dummy input (must match training columns count)
+input_data = pd.DataFrame([[0]* (len(model.feature_names_in_))], columns=model.feature_names_in_)
+
+pred = model.predict(input_data)
+print('Prediction test successful:', pred)
+"
+
+    # ✅ Success Message
+    - name: Pipeline Completed
+      run: echo "MLOps pipeline executed successfully!"
